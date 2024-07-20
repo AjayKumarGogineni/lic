@@ -1,4 +1,5 @@
 .venv
+data/*
 data/pdfs/*
 data/text/*
 extractions.ipynb
