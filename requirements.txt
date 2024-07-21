@@ -1,3 +1,4 @@
+pywin32==301
 altair==5.3.0
 annotated-types==0.7.0
 anyio==4.4.0
