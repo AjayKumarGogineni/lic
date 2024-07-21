@@ -77,10 +77,10 @@ pydantic==2.8.2
 pydantic_core==2.20.1
 pydeck==0.9.1
 Pygments==2.18.0
-PyMuPDF==1.24.7
-PyMuPDFb==1.24.6
+# PyMuPDF==1.24.7
+# PyMuPDFb==1.24.6
 python-dateutil==2.9.0.post0
-pytz==2024.1
+# pytz==2024.1
 pywin32==306
 PyYAML==6.0.1
 pyzmq==26.0.3
