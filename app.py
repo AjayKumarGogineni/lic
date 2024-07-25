@@ -18,7 +18,11 @@ genai.configure(api_key=os.environ['GEMINI_API_KEY'])
 # with open('summarized_policies.json', 'r') as f:
 #     policy_data = json.load(f)
 
-with open('description.json', 'r') as f:
+with open('description.json', 'r', encoding = 'utf-8') as f:
+    policy_descriptions = json.load(f)
+
+# Load the policy data
+with open('summarized_policies.json', 'r') as f:
     policy_data = json.load(f)
 
 # Extract policy names for the dropdown
@@ -50,11 +54,18 @@ def get_recommendation(user_data):
     """
     
     for policy_key, policy_info in policy_data.items():
-        if 'Age 0 -13' not in policy_key:  # Exclude child plans
-            prompt += f"""
-            Name: {policy_info['name']}
-            Summary: {policy_info['policy_summary']}
-            """
+        # if 'Age 0 -13' not in policy_key:  # Exclude child plans
+        prompt += f"""
+        Name: {policy_info['name']}
+        Summary: {policy_info['policy_summary']}
+        """
+
+    for policy_key, policy_info in policy_descriptions.items():
+        # if 'Age 0 -13' not in policy_key:  # Exclude child plans
+        prompt += f"""
+        Name: {policy_key}
+        Policy description: {policy_info}
+        """
 
     prompt += """
     Please suggest a new policy from the available options that would complement the user's existing portfolio and fit their current age and budget. Explain why this policy would be suitable for them.
