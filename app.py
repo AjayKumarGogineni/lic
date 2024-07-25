@@ -2,9 +2,23 @@ import streamlit as st
 import ollama
 import json
 from datetime import date
+from vertexai.preview.generative_models import FunctionDeclaration, GenerativeModel, Part, Tool
+# from dotenv import load_dotenv
+from vertexai import generative_models
+import os
+import google.generativeai as genai
+
+
+API_KEY = 'AIzaSyDxdpnbvDEkEA2j49arcTdWjyEwgsTXN_Q'
+os.environ['GEMINI_API_KEY'] = API_KEY
+
+genai.configure(api_key=os.environ['GEMINI_API_KEY'])
 
 # Load the policy data
-with open('summarized_policies.json', 'r') as f:
+# with open('summarized_policies.json', 'r') as f:
+#     policy_data = json.load(f)
+
+with open('descriptions.json', 'r') as f:
     policy_data = json.load(f)
 
 # Extract policy names for the dropdown
@@ -16,7 +30,6 @@ def get_recommendation(user_data):
     Based on the following user information and their existing policies, suggest a new suitable life insurance policy:
     
     User Information:
-    Age: {user_data['Age']}
     Date of Birth: {user_data['DOB']}
     Budget for New Policy: ₹{user_data['Budget']}
     
@@ -47,23 +60,52 @@ def get_recommendation(user_data):
     Please suggest a new policy from the available options that would complement the user's existing portfolio and fit their current age and budget. Explain why this policy would be suitable for them.
     """
 
-    # Call the Ollama LLM
-    response = ollama.chat(model='llama3', messages=[
-        {
-            'role': 'user',
-            'content': prompt,
-        },
-    ])
+    model_name = "gemini-1.5-flash-001"
+    #gemini-1.5-flash-001, gemini-1.5-pro-001
+    generation_config = {
+        "temperature": 1,
+        "top_p": 0.95,
+        "top_k": 64,
+        "max_output_tokens": 8192,
+        "response_mime_type": "text/plain",
+        }
+    
+    safety_settings = {
+        generative_models.HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: generative_models.HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+        generative_models.HarmCategory.HARM_CATEGORY_HARASSMENT: generative_models.HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+    }
 
-    return response['message']['content']
+    model = genai.GenerativeModel(
+                model_name="gemini-1.5-flash",
+                generation_config=generation_config,
+                # safety_settings = Adjust safety settings
+                # See https://ai.google.dev/gemini-api/docs/safety-settings
+                )
+
+    chat_session = model.start_chat(
+                    history=[
+                    ]
+                    )
+    response = chat_session.send_message(prompt)
+    return response.text
+
+    # # Call the Ollama LLM
+    # response = ollama.chat(model='llama3', messages=[
+    #     {
+    #         'role': 'user',
+    #         'content': prompt,
+    #     },
+    # ])
+
+    # return response['message']['content']
 
 def main():
     st.title("Life Insurance Policy Recommender")
 
     # User input fields
     with st.sidebar:
-        age = st.number_input("Age", min_value=18, max_value=100, step=1)
-        dob = st.date_input("Date of Birth", min_value=date(1900,1,1), max_value= date(2023,1,1))
+        # age = st.number_input("Age", min_value=1, max_value=100, step=1)
+        dob = st.date_input("Date of Birth", min_value=date(1900,1,1), max_value= date(2024,7,21))
         budget = st.number_input("Budget for New Policy (₹)", min_value=0.0, step=100.0)
 
         # Existing policies
@@ -75,8 +117,8 @@ def main():
         for i in range(num_policies):
             st.write(f"Policy {i+1}")
             plan = st.selectbox(f"Plan {i+1}", policy_names, key=f"plan_{i}")
-            start_date = st.date_input(f"Start Date {i+1}", key=f"start_{i}")
-            end_date = st.date_input(f"End Date {i+1}", key=f"end_{i}")
+            start_date = st.date_input(f"Start Date {i+1}", key=f"start_{i}", min_value=date(1900,1,1), max_value= date(2024,7,21))
+            end_date = st.date_input(f"End Date {i+1}", key=f"end_{i}", min_value=date(1900,1,1), max_value= date(2200,1,1))
             premium = st.number_input(f"Premium Amount {i+1} (₹)", min_value=0.0, step=100.0, key=f"premium_{i}")
             
             policies.append({
@@ -88,7 +130,7 @@ def main():
 
     if st.button("Get Recommendation"):
         user_data = {
-            "Age": age,
+            # "Age": age,
             "DOB": dob.strftime("%Y-%m-%d"),
             "Budget": budget,
             "Policies": policies
