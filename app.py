@@ -18,7 +18,7 @@ genai.configure(api_key=os.environ['GEMINI_API_KEY'])
 # with open('summarized_policies.json', 'r') as f:
 #     policy_data = json.load(f)
 
-with open('descriptions.json', 'r') as f:
+with open('description.json', 'r') as f:
     policy_data = json.load(f)
 
 # Extract policy names for the dropdown
