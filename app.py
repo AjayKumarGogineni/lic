@@ -9,7 +9,7 @@ import os
 import google.generativeai as genai
 
 
-# os.environ['GEMINI_API_KEY'] = API_KEY
+os.environ['GEMINI_API_KEY'] = st.secrets["GEMINI_API_KEY"]
 
 genai.configure(api_key=os.environ['GEMINI_API_KEY'])
 
